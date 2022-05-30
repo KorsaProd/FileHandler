@@ -2,19 +2,16 @@ package ru.company;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 public class Main {
 
-    private static final String DIRECTORY_PATH = "/Users/Korsa/Desktop/Doczilla";
-    private static List<String> preSortedFiles = new ArrayList<>();
-    //TODO: вернуть формат в листе - File
+    private static String DIRECTORY_PATH = null; // = "/Users/Korsa/Desktop/Doczilla";
+    private static final List<File> preSortedFiles = new ArrayList<>();
+    private static final List<File> sortedFiles = new ArrayList<>();
 
     public static void preSortFiles(File folder) {
         File[] folderEntries = folder.listFiles();
@@ -23,9 +20,35 @@ public class Main {
                 preSortFiles(entry);
                 continue;
             } else if (entry.getAbsolutePath().endsWith(".txt")) {
-                preSortedFiles.add(entry.getAbsolutePath());
+                preSortedFiles.add(entry);
             }
         }
+    }
+
+    public static void swapIndex(int i, String folderFile) {
+
+        for (int j = 0; j < preSortedFiles.size(); j++) {
+            if (preSortedFiles.get(j).getAbsolutePath().contains(folderFile)) {
+                File buffer = preSortedFiles.get(i);
+
+                preSortedFiles.set(i, preSortedFiles.get(j));
+                preSortedFiles.set(j, buffer);
+
+            }
+        }
+    }
+
+    public static void reversPriority() {
+        for (int i = preSortedFiles.size() -1; i != -1; i--) {
+           sortedFiles.add(preSortedFiles.get(i));
+        }
+
+    }
+
+    public static void inputDirectoryPath(String message) {
+        System.out.println(message);
+        Scanner scanner = new Scanner(System.in);
+        DIRECTORY_PATH = scanner.nextLine();
     }
 
 
@@ -35,55 +58,29 @@ public class Main {
         preSortFiles(folder);
            for (int i = 0; i < preSortedFiles.size(); i++) {
             try {
-                System.out.println(preSortedFiles.get(i));
-                    List<String> lines = Files.readAllLines(Path.of(preSortedFiles.get(i)), Charset.defaultCharset());
+                    List<String> lines = Files.readAllLines(Path.of(String.valueOf(preSortedFiles.get(i))),
+                            Charset.defaultCharset());
                     for (String content : lines) {
                         if (content.contains("require")) {
 
                            String folderFile = content
                                    .substring(content.indexOf('‘') + 1, content.lastIndexOf('’'));
 
-//                            StringBuilder stringBuilder = new StringBuilder();
-//                            stringBuilder.append(folderFile[0]);
-//                            stringBuilder.append("/");
-//                            stringBuilder.append(folderFile[1]);
-//                            stringBuilder.append(".txt");
-//
-//                            System.out.println(stringBuilder);
-
-                            for (int j =0; j < preSortedFiles.size(); j++) {
-                                if (preSortedFiles.get(j).contains(folderFile)) {
-                                    System.out.println("Yes");
-                                    preSortedFiles.set()
-                                            //TODO: на стадии когда нужно поменять местами индексы/приоритеты
-                                }
-                            }
-
-                           // System.out.println(preSortedFiles.contains(stringBuilder.toString()));
-
-
-
-
-
-
-                            ///Users/Korsa/Desktop/Doczilla/Folder2/File2-1.txt
-                            ///Users/Korsa/Desktop/Doczilla/Folder2/File2-2.txt
-                            //Folder Folder 1
-                            //File File 1-1
+                           swapIndex(i, folderFile);
                         }
-
                     }
-
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
+           reversPriority();
     }
 
     public static void main(String[] args) {
-
+        inputDirectoryPath("Enter directory path: ");
         File folder = new File(DIRECTORY_PATH);
         processFilesFromFolder(folder);
+        System.out.println(sortedFiles);
 
     }
 }
