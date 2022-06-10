@@ -6,10 +6,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static java.nio.charset.Charset.defaultCharset;
+
 
 public class Main {
 
-    private static String DIRECTORY_PATH = null; // = "/Users/Korsa/Desktop/Doczilla";
+    private static String DIRECTORY_PATH = "resources";
     private static final List<File> preSortedFiles = new ArrayList<>();
     private static final List<File> sortedFiles = new ArrayList<>();
 
@@ -45,13 +47,6 @@ public class Main {
 
     }
 
-    public static void inputDirectoryPath(String message) {
-        System.out.println(message);
-        Scanner scanner = new Scanner(System.in);
-        DIRECTORY_PATH = scanner.nextLine();
-    }
-
-
 
     public static void processFilesFromFolder(File folder) {
 
@@ -59,7 +54,7 @@ public class Main {
            for (int i = 0; i < preSortedFiles.size(); i++) {
             try {
                     List<String> lines = Files.readAllLines(Path.of(String.valueOf(preSortedFiles.get(i))),
-                            Charset.defaultCharset());
+                            defaultCharset());
                     for (String content : lines) {
                         if (content.contains("require")) {
 
@@ -76,11 +71,33 @@ public class Main {
            reversPriority();
     }
 
+    public static void concatenateContent(List<File> fileList) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            for (File file : fileList) {
+                List<String> lines = Files.readAllLines(Path.of(file.getAbsolutePath()), Charset.defaultCharset());
+                for (String content : lines) {
+                    if (content.isEmpty() || content.startsWith("\trequire")) {
+                        continue;
+                    } else {
+                        stringBuilder.append(content).append("\n");
+                    }
+                }
+            }
+           PrintWriter printWriter = new PrintWriter("output/output.txt");
+            printWriter.write(stringBuilder.toString());
+            printWriter.flush();
+            printWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
-        inputDirectoryPath("Enter directory path: ");
         File folder = new File(DIRECTORY_PATH);
         processFilesFromFolder(folder);
-        System.out.println(sortedFiles);
-
+        System.out.println("Список файлов согласно зависимостям: " + "\n" + sortedFiles);
+        System.out.println("Содержание файлов находится в файле output/output.txt");
+        concatenateContent(sortedFiles);
     }
 }
